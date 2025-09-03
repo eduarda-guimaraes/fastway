@@ -1,0 +1,28 @@
+# Diretórios e arquivos do ambiente virtual
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Arquivos de configuração do editor
+.vscode/
+.idea/
+
+# Arquivos de log
+*.log
+
+# Arquivos temporários
+*.tmp
+*.bak
+
+# Arquivos de banco de dados locais (se existir)
+*.db
+*.sqlite3
+
+# Arquivos de teste ou de cache (se houver)
+*.cover
+*.hypothesis/
+*.tox/
+
+# Dependências do sistema operacional
+Thumbs.db  # Para Windows

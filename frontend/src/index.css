@@ -1,0 +1,96 @@
+/* src/index.css */
+
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* Estilos personalizados (se necessário) */
+body {
+  font-family: Arial, sans-serif;
+}
+
+/* index.css */
+header {
+  background-color: #A9D5A5; /* Cor de fundo verde */
+  padding: 20px 0;
+}
+
+header .text-white {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+header ul {
+  list-style-type: none;
+}
+
+header ul li {
+  display: inline-block;
+  margin-left: 30px;
+}
+
+header ul li a {
+  color: white;
+  font-size: 1.2rem;
+  text-decoration: none;
+}
+
+header ul li a:hover {
+  color: #F3F9F1;
+}
+
+/* index.css */
+.bg-white {
+  background-color: #FFFFFF;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.display-4 {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.lead {
+  font-size: 1.25rem;
+  color: #6C757D;
+}
+
+.row-cols-1,
+.row-cols-sm-2,
+.row-cols-md-3 {
+  margin-top: 30px;
+}
+
+.card {
+  border-radius: 15px;
+  border: none;
+}
+
+.card-body {
+  background-color: #F8F9FA;
+  padding: 20px;
+}
+
+.card .h5 {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.card p {
+  color: #6C757D;
+}
+
+.card .btn {
+  background-color: #A9D5A5;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  text-decoration: none;
+}
+
+.card .btn:hover {
+  background-color: #88C59E;
+}
+
