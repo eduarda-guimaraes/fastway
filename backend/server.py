@@ -1,8 +1,9 @@
-# backend/server.py
 from flask import Flask, jsonify
+from flask_cors import CORS  # Importe o CORS
 import requests
 
 app = Flask(__name__)
+CORS(app)  # Ative o CORS para permitir requisições de diferentes origens
 
 # Função para consumir a API de usuários
 def get_users():
