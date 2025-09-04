@@ -1,124 +1,186 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Footer from '../components/Footer';
 
 const Home = () => {
-  // Estados para armazenar os dados das APIs
-  const [users, setUsers] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
   const [foods, setFoods] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Função para buscar dados da API
   const fetchData = async () => {
     try {
-      const usersResponse = await fetch('http://localhost:5000/api/users'); // URL completa
-      const usersData = await usersResponse.json();
-      setUsers(usersData);
-
-      const restaurantsResponse = await fetch('http://localhost:5000/api/restaurants'); // URL completa
+      const restaurantsResponse = await fetch('http://localhost:5000/api/restaurants');
       const restaurantsData = await restaurantsResponse.json();
       setRestaurants(restaurantsData);
 
-      const foodsResponse = await fetch('http://localhost:5000/api/foods'); // URL completa
+      const foodsResponse = await fetch('http://localhost:5000/api/foods');
       const foodsData = await foodsResponse.json();
       setFoods(foodsData);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Chama a API assim que o componente for montado
   useEffect(() => {
     fetchData();
   }, []);
 
   return (
     <div className="bg-white min-vh-100">
-      <div className="container py-5">
-        {/* Seção de Promoção */}
-        <div 
-          className="p-5 rounded mb-5 text-center" 
-          style={{
-            backgroundImage: 'url(/promocao.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            position: 'relative',
-            color: 'white',
-            overflow: 'hidden', // Garante que a imagem embaçada não ultrapasse a borda
-          }}
-        >
-          {/* Fundo embaçado */}
-          <div style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fundo semi-transparente para contraste
-            zIndex: -1, // Garante que o fundo fique atrás do texto
-            filter: 'blur(8px)', // Efeito de desfoque
-          }}></div>
-          
-          <h2 className="display-4 text-warning mb-4" style={{ textShadow: '2px 2px 5px rgba(0, 0, 0, 0.7)' }}>Promoção</h2>
-          <h3 className="mb-3 text-light" style={{ textShadow: '2px 2px 5px rgba(0, 0, 0, 0.7)' }}>Super Combo Burger + Batata + Refri</h3>
-          <p className="h4 mb-4 text-light" style={{ textShadow: '2px 2px 5px rgba(0, 0, 0, 0.7)' }}>R$19,90</p>
-          <p className="lead text-light" style={{ textShadow: '2px 2px 5px rgba(0, 0, 0, 0.7)' }}>Aproveite essa oferta incrível em nossos restaurantes!</p>
+      <div className="container py-4">
+        {/* Promoção */}
+        <div className="promo-section text-center text-white rounded p-5 mb-5 position-relative">
+          <h2 className="display-5 fw-bold mb-3">Promoção Especial</h2>
+          <h4 className="fw-semibold">Super Combo Burger + Batata + Refri</h4>
+          <p className="fs-3 text-warning fw-bold">R$ 19,90</p>
+          <p className="lead">Aproveite essa oferta incrível em nossos restaurantes!</p>
         </div>
 
-        {/* Seção de Pesquisa */}
+        {/* Busca */}
         <div className="text-center mb-5">
-          <input 
-            type="text" 
-            className="form-control form-control-lg rounded-pill w-50 mx-auto" 
-            placeholder="O que você quer comer hoje?" 
-          />
-          <div className="mt-4">
-            <button className="btn btn-success rounded-pill">Buscar</button>
+          <div className="search-container mx-auto">
+            <span className="search-icon">
+              <i className="bi bi-search"></i>
+            </span>
+            <input
+              type="text"
+              className="form-control form-control-lg rounded-pill ps-5"
+              placeholder="O que você quer comer hoje?"
+            />
           </div>
         </div>
 
-        {/* Cards de Categorias */}
+        {/* Categorias */}
         <div className="text-center mb-5">
           <h3 className="mb-4">Categorias</h3>
-          <div className="d-flex justify-content-center gap-4">
-            <button className="btn btn-outline-success rounded-pill">Burgers</button>
-            <button className="btn btn-outline-success rounded-pill">Pizzas</button>
-            <button className="btn btn-outline-success rounded-pill">Japonês</button>
-            <button className="btn btn-outline-success rounded-pill">Mexicano</button>
+          <div className="d-flex justify-content-center flex-wrap gap-3">
+            <button className="btn btn-outline-success rounded-pill">
+              🍔 Burgers
+            </button>
+            <button className="btn btn-outline-success rounded-pill">
+              🍕 Pizzas
+            </button>
+            <button className="btn btn-outline-success rounded-pill">
+              🍣 Japonês
+            </button>
+            <button className="btn btn-outline-success rounded-pill">
+              🌮 Mexicano
+            </button>
           </div>
         </div>
 
-        {/* Restaurantes Populares */}
-        <div className="text-center mb-5">
-          <h3 className="mb-4">Restaurantes Populares</h3>
-          <div className="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-            {/* Cards de Restaurantes */}
-            {restaurants.length > 0 ? restaurants.map((restaurant, index) => (
-              <div key={index} className="col">
-                <div className="card shadow-sm">
-                  <img src={restaurant.image || 'https://via.placeholder.com/150'} alt={restaurant.name} className="card-img-top" />
-                  <div className="card-body text-center">
-                    <h5 className="card-title">{restaurant.name}</h5>
-                    <p className="card-text">Entrega em {restaurant.deliveryTime}</p>
+        {/* Restaurantes */}
+        <div className="mb-5">
+          <h3 className="mb-4 text-center">Restaurantes Populares</h3>
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-success"></div>
+              <p className="mt-3 text-muted">Carregando restaurantes...</p>
+            </div>
+          ) : (
+            <div className="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
+              {restaurants.map((restaurant, index) => (
+                <div key={index} className="col">
+                  <div className="card h-100 shadow-sm border-0 restaurant-card">
+                    <img
+                      src={restaurant.image || 'https://via.placeholder.com/300x200?text=Restaurante'}
+                      alt={restaurant.name}
+                      className="card-img-top restaurant-img"
+                    />
+                    <div className="card-body text-center">
+                      <h6 className="fw-semibold">{restaurant.name}</h6>
+                      <span className="badge bg-success">
+                        Entrega em {restaurant.deliveryTime}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )) : <p>Carregando restaurantes...</p>}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Seção de Alimentos */}
-        <div className="text-center mb-5">
-          <h3 className="mb-4">Alimentos</h3>
-          <div className="d-flex justify-content-center gap-4">
-            {foods.length > 0 ? foods.map((food, index) => (
-              <div key={index} className="card" style={{ width: '18rem' }}>
-                <img src={food.image || 'https://via.placeholder.com/150'} className="card-img-top" alt={food.name} />
-                <div className="card-body">
-                  <h5 className="card-title">{food.name}</h5>
-                  <p className="card-text">R$ {food.price}</p>
+        {/* Alimentos */}
+        <div className="mb-5">
+          <h3 className="mb-4 text-center">Alimentos</h3>
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-success"></div>
+              <p className="mt-3 text-muted">Carregando alimentos...</p>
+            </div>
+          ) : (
+            <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+              {foods.map((food, index) => (
+                <div key={index} className="col">
+                  <div className="card h-100 shadow-sm border-0 food-card">
+                    <div className="position-relative">
+                      <img
+                        src={food.image || 'https://via.placeholder.com/300x200?text=Comida'}
+                        alt={food.name}
+                        className="card-img-top food-img"
+                      />
+                      <span className="badge bg-success position-absolute top-0 end-0 m-2 px-2 py-1">
+                        R$ {food.price}
+                      </span>
+                    </div>
+                    <div className="card-body text-center">
+                      <h6 className="fw-semibold">{food.name}</h6>
+                      {food.description && (
+                        <p className="text-muted small mb-0">{food.description}</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )) : <p>Carregando alimentos...</p>}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
+      <Footer />
+
+      {/* CSS extra */}
+      <style>{`
+        .promo-section {
+          background: url('/promocao.jpg') center/cover no-repeat;
+        }
+        .promo-section::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: rgba(0,0,0,0.55);
+        }
+        .promo-section * {
+          position: relative;
+          z-index: 1;
+        }
+        .restaurant-card, .food-card {
+          border-radius: 12px;
+          transition: all 0.3s ease;
+        }
+        .restaurant-card:hover, .food-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+        }
+        .restaurant-img, .food-img {
+          height: 150px;
+          object-fit: cover;
+          border-top-left-radius: 12px;
+          border-top-right-radius: 12px;
+        }
+        .search-container {
+          position: relative;
+          width: 50%;
+        }
+        .search-icon {
+          position: absolute;
+          left: 15px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #6c757d;
+        }
+      `}</style>
     </div>
   );
 };
