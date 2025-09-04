@@ -1,24 +1,24 @@
+// frontend/src/pages/Users.jsx
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // 👈 importar
 import Footer from '../components/Footer';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Buscar usuários
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/users');
-      const data = await response.json();
-      setUsers(data);
-    } catch (error) {
-      console.error("Erro ao buscar usuários:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/users');
+        const data = await response.json();
+        setUsers(data);
+      } catch (error) {
+        console.error("Erro ao buscar usuários:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchUsers();
   }, []);
 
@@ -27,7 +27,6 @@ const Users = () => {
       <div className="container py-5">
         <h1 className="text-center mb-5">Usuários</h1>
 
-        {/* Loading */}
         {loading ? (
           <div className="text-center py-5">
             <div className="spinner-border text-success"></div>
@@ -35,11 +34,11 @@ const Users = () => {
           </div>
         ) : (
           <div className="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-            {users.map((user, index) => (
-              <div key={index} className="col">
+            {users.map((user) => (
+              <div key={user.id} className="col">
                 <div className="card h-100 shadow-sm user-card border-0">
                   <div className="card-body text-center">
-                    {/* Avatar com inicial */}
+                    {/* Avatar */}
                     <div className="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3">
                       {user.name ? user.name.charAt(0).toUpperCase() : "?"}
                     </div>
@@ -47,22 +46,26 @@ const Users = () => {
                     <h5 className="fw-bold">{user.name}</h5>
                     <p className="text-muted small">{user.email}</p>
 
-                    {/* Se houver role ou tipo de usuário */}
                     {user.role && (
                       <span className="badge bg-secondary">{user.role}</span>
                     )}
 
                     <div className="mt-3">
-                      <button className="btn btn-outline-success btn-sm rounded-pill">
+                      <Link
+                        to={`/users/${user.id}`}
+                        className="btn btn-outline-success btn-sm rounded-pill"
+                      >
                         Ver perfil
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
               </div>
             ))}
             {users.length === 0 && (
-              <div className="text-center py-5 text-muted">Nenhum usuário encontrado</div>
+              <div className="text-center py-5 text-muted">
+                Nenhum usuário encontrado
+              </div>
             )}
           </div>
         )}
@@ -70,7 +73,6 @@ const Users = () => {
 
       <Footer />
 
-      {/* CSS extra */}
       <style>{`
         .user-card {
           border-radius: 12px;

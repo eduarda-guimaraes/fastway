@@ -1,30 +1,88 @@
-import React, { useState, useEffect } from 'react';
+// frontend/src/pages/Home.jsx
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 
-const Home = () => {
+export default function Home() {
   const [restaurants, setRestaurants] = useState([]);
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchData = async () => {
-    try {
-      const restaurantsResponse = await fetch('http://localhost:5000/api/restaurants');
-      const restaurantsData = await restaurantsResponse.json();
-      setRestaurants(restaurantsData);
-
-      const foodsResponse = await fetch('http://localhost:5000/api/foods');
-      const foodsData = await foodsResponse.json();
-      setFoods(foodsData);
-    } catch (error) {
-      console.error("Erro ao buscar dados:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // estado da busca (sincroniza com ?q= na URL)
+  const [q, setQ] = useState(() => {
+    const usp = new URLSearchParams(window.location.search);
+    return usp.get('q') ?? '';
+  });
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [restaurantsResponse, foodsResponse] = await Promise.all([
+          fetch('http://localhost:5000/api/restaurants'),
+          fetch('http://localhost:5000/api/foods'),
+        ]);
+        const [restaurantsData, foodsData] = await Promise.all([
+          restaurantsResponse.json(),
+          foodsResponse.json(),
+        ]);
+        setRestaurants(Array.isArray(restaurantsData) ? restaurantsData : []);
+        setFoods(Array.isArray(foodsData) ? foodsData : []);
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchData();
   }, []);
+
+  // atualiza ?q= na URL
+  useEffect(() => {
+    const usp = new URLSearchParams(window.location.search);
+    if (q) usp.set('q', q);
+    else usp.delete('q');
+    window.history.replaceState(null, '', `/?${usp.toString()}`);
+  }, [q]);
+
+  // sincroniza estado quando navegar pelo histórico
+  useEffect(() => {
+    const onPop = () => {
+      const usp = new URLSearchParams(window.location.search);
+      setQ(usp.get('q') ?? '');
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  // normalizador + filtro
+  const norm = (s) => (s || '').toString().toLowerCase();
+  const matchesQuery = (item) => {
+    if (!q) return true;
+    const needle = norm(q);
+    const hay = [
+      item.name,
+      item.description,
+      item.cuisine,
+      item.category,
+      ...(Array.isArray(item.tags) ? item.tags : []),
+    ]
+      .filter(Boolean)
+      .map(norm)
+      .join(' ');
+    return hay.includes(needle);
+  };
+
+  const filteredRestaurants = useMemo(
+    () => restaurants.filter(matchesQuery),
+    [restaurants, q]
+  );
+
+  const filteredFoods = useMemo(
+    () => foods.filter(matchesQuery),
+    [foods, q]
+  );
+
+  const isEmptySearch = !loading && !filteredRestaurants.length && !filteredFoods.length;
 
   return (
     <div className="bg-white min-vh-100">
@@ -38,104 +96,136 @@ const Home = () => {
         </div>
 
         {/* Busca */}
-        <div className="text-center mb-5">
+        <div className="text-center mb-4">
           <div className="search-container mx-auto">
             <span className="search-icon">
               <i className="bi bi-search"></i>
             </span>
             <input
               type="text"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
               className="form-control form-control-lg rounded-pill ps-5"
               placeholder="O que você quer comer hoje?"
+              aria-label="Campo de busca por restaurantes e alimentos"
             />
           </div>
-        </div>
-
-        {/* Categorias */}
-        <div className="text-center mb-5">
-          <h3 className="mb-4">Categorias</h3>
-          <div className="d-flex justify-content-center flex-wrap gap-3">
-            <button className="btn btn-outline-success rounded-pill">
-              🍔 Burgers
-            </button>
-            <button className="btn btn-outline-success rounded-pill">
-              🍕 Pizzas
-            </button>
-            <button className="btn btn-outline-success rounded-pill">
-              🍣 Japonês
-            </button>
-            <button className="btn btn-outline-success rounded-pill">
-              🌮 Mexicano
-            </button>
-          </div>
+          {q && (
+            <div className="mt-3 small text-muted">
+              <span className="badge text-bg-light">busca: “{q}”</span>
+            </div>
+          )}
         </div>
 
         {/* Restaurantes */}
         <div className="mb-5">
-          <h3 className="mb-4 text-center">Restaurantes Populares</h3>
+          <div className="d-flex align-items-baseline justify-content-between mb-3">
+            <h3 className="mb-0">Restaurantes Populares</h3>
+            {!loading && (
+              <span className="text-muted small">
+                {filteredRestaurants.length} resultado(s)
+              </span>
+            )}
+          </div>
+
           {loading ? (
             <div className="text-center py-5">
-              <div className="spinner-border text-success"></div>
+              <div className="spinner-border text-success" />
               <p className="mt-3 text-muted">Carregando restaurantes...</p>
             </div>
-          ) : (
+          ) : filteredRestaurants.length ? (
             <div className="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-              {restaurants.map((restaurant, index) => (
-                <div key={index} className="col">
-                  <div className="card h-100 shadow-sm border-0 restaurant-card">
-                    <img
-                      src={restaurant.image || 'https://via.placeholder.com/300x200?text=Restaurante'}
-                      alt={restaurant.name}
-                      className="card-img-top restaurant-img"
-                    />
-                    <div className="card-body text-center">
-                      <h6 className="fw-semibold">{restaurant.name}</h6>
-                      <span className="badge bg-success">
-                        Entrega em {restaurant.deliveryTime}
-                      </span>
+              {filteredRestaurants.map((restaurant) => (
+                <div key={restaurant.id} className="col">
+                  <Link
+                    to={`/restaurants/${restaurant.id}`}
+                    className="text-decoration-none text-reset"
+                  >
+                    <div className="card h-100 shadow-sm border-0 restaurant-card">
+                      <img
+                        src={restaurant.image || 'https://via.placeholder.com/600x400?text=Restaurante'}
+                        alt={restaurant.name}
+                        className="card-img-top restaurant-img"
+                        loading="lazy"
+                      />
+                      <div className="card-body text-center">
+                        <h6 className="fw-semibold mb-1">{restaurant.name}</h6>
+                        {restaurant.description && (
+                          <p className="text-muted small mb-2">{restaurant.description}</p>
+                        )}
+                        <div className="d-flex gap-2 justify-content-center align-items-center">
+                          {restaurant.cuisine && (
+                            <span className="badge text-bg-light">{restaurant.cuisine}</span>
+                          )}
+                          <span className="badge bg-success">
+                            Entrega em {restaurant.deliveryTime || '20-40 min'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               ))}
             </div>
+          ) : (
+            <div className="text-center text-muted">Nenhum restaurante encontrado.</div>
           )}
         </div>
 
         {/* Alimentos */}
         <div className="mb-5">
-          <h3 className="mb-4 text-center">Alimentos</h3>
+          <div className="d-flex align-items-baseline justify-content-between mb-3">
+            <h3 className="mb-0">Alimentos</h3>
+            {!loading && (
+              <span className="text-muted small">{filteredFoods.length} resultado(s)</span>
+            )}
+          </div>
+
           {loading ? (
             <div className="text-center py-5">
-              <div className="spinner-border text-success"></div>
+              <div className="spinner-border text-success" />
               <p className="mt-3 text-muted">Carregando alimentos...</p>
             </div>
-          ) : (
+          ) : filteredFoods.length ? (
             <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-              {foods.map((food, index) => (
-                <div key={index} className="col">
-                  <div className="card h-100 shadow-sm border-0 food-card">
-                    <div className="position-relative">
-                      <img
-                        src={food.image || 'https://via.placeholder.com/300x200?text=Comida'}
-                        alt={food.name}
-                        className="card-img-top food-img"
-                      />
-                      <span className="badge bg-success position-absolute top-0 end-0 m-2 px-2 py-1">
-                        R$ {food.price}
-                      </span>
+              {filteredFoods.map((food) => (
+                <div key={food.id} className="col">
+                  <Link to={`/foods/${food.id}`} className="text-decoration-none text-reset">
+                    <div className="card h-100 shadow-sm border-0 food-card">
+                      <div className="position-relative">
+                        <img
+                          src={food.image || 'https://via.placeholder.com/600x400?text=Comida'}
+                          alt={food.name}
+                          className="card-img-top food-img"
+                          loading="lazy"
+                        />
+                        {typeof food.price !== 'undefined' && (
+                          <span className="badge bg-success position-absolute top-0 end-0 m-2 px-2 py-1">
+                            R$ {Number(food.price).toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="card-body text-center">
+                        <h6 className="fw-semibold mb-1">{food.name}</h6>
+                        {food.description && (
+                          <p className="text-muted small mb-0">{food.description}</p>
+                        )}
+                      </div>
                     </div>
-                    <div className="card-body text-center">
-                      <h6 className="fw-semibold">{food.name}</h6>
-                      {food.description && (
-                        <p className="text-muted small mb-0">{food.description}</p>
-                      )}
-                    </div>
-                  </div>
+                  </Link>
                 </div>
               ))}
             </div>
+          ) : (
+            <div className="text-center text-muted">Nenhum alimento encontrado.</div>
           )}
         </div>
+
+        {isEmptySearch && (
+          <div className="text-center text-muted">
+            Nada encontrado para sua busca. Tente outros termos. 🙂
+          </div>
+        )}
       </div>
 
       <Footer />
@@ -151,17 +241,15 @@ const Home = () => {
           inset: 0;
           background: rgba(0,0,0,0.55);
         }
-        .promo-section * {
-          position: relative;
-          z-index: 1;
-        }
+        .promo-section * { position: relative; z-index: 1; }
+
         .restaurant-card, .food-card {
           border-radius: 12px;
-          transition: all 0.3s ease;
+          transition: all 0.25s ease;
         }
         .restaurant-card:hover, .food-card:hover {
           transform: translateY(-4px);
-          box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+          box-shadow: 0 6px 18px rgba(0,0,0,0.12);
         }
         .restaurant-img, .food-img {
           height: 150px;
@@ -171,18 +259,17 @@ const Home = () => {
         }
         .search-container {
           position: relative;
-          width: 50%;
+          width: min(720px, 100%);
         }
         .search-icon {
           position: absolute;
-          left: 15px;
+          left: 16px;
           top: 50%;
           transform: translateY(-50%);
           color: #6c757d;
+          pointer-events: none;
         }
       `}</style>
     </div>
   );
-};
-
-export default Home;
+}
