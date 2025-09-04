@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // 👈 importa o Link
 import Footer from '../components/Footer';
 
 const INLINE_CSS_ID = 'foods-inline-styles';
@@ -48,13 +49,10 @@ const CSS_TEXT = `
     background: #0f6848;
   }
 
-  .search-container {
-    position: relative;
-  }
+  .search-container { position: relative; }
   .search-icon {
     position: absolute;
-    left: 12px;
-    top: 50%;
+    left: 12px; top: 50%;
     transform: translateY(-50%);
     color: #6c757d;
     z-index: 5;
@@ -69,15 +67,24 @@ const Foods = () => {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [categories, setCategories] = useState(['Todos']);
 
+  useEffect(() => {
+    if (!document.getElementById(INLINE_CSS_ID)) {
+      const style = document.createElement('style');
+      style.id = INLINE_CSS_ID;
+      style.innerText = CSS_TEXT;
+      document.head.appendChild(style);
+    }
+  }, []);
+
   // Buscar dados da API
   const fetchFoods = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/foods');
       const data = await response.json();
-      setFoods(data);
-      setFilteredFoods(data);
-      
-      const uniqueCategories = ['Todos', ...new Set(data.map(food => food.category).filter(Boolean))];
+      setFoods(Array.isArray(data) ? data : []);
+      setFilteredFoods(Array.isArray(data) ? data : []);
+      const uniqueCategories = ['Todos', ...new Set((Array.isArray(data) ? data : [])
+        .map(food => food.category).filter(Boolean))];
       setCategories(uniqueCategories);
     } catch (error) {
       console.error("Erro ao buscar alimentos:", error);
@@ -87,18 +94,19 @@ const Foods = () => {
   // Filtro
   useEffect(() => {
     let result = foods;
-    
+
     if (searchTerm) {
-      result = result.filter(food => 
-        food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (food.description && food.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      const needle = searchTerm.toLowerCase();
+      result = result.filter(food =>
+        food.name?.toLowerCase().includes(needle) ||
+        food.description?.toLowerCase().includes(needle)
       );
     }
-    
+
     if (selectedCategory !== 'Todos') {
       result = result.filter(food => food.category === selectedCategory);
     }
-    
+
     setFilteredFoods(result);
   }, [searchTerm, selectedCategory, foods]);
 
@@ -106,10 +114,18 @@ const Foods = () => {
     fetchFoods();
   }, []);
 
+  // Evita que o botão "Add" dentro do card clique o Link
+  const handleAdd = (e, food) => {
+    e.stopPropagation();
+    e.preventDefault();
+    // aqui você pode disparar seu fluxo de carrinho
+    console.log('Adicionar ao carrinho:', food);
+  };
+
   return (
     <div className="bg-light min-vh-100">
       <style id={INLINE_CSS_ID}>{CSS_TEXT}</style>
-      
+
       <div className="container py-4">
         {/* Header */}
         <div className="text-center mb-4">
@@ -155,38 +171,54 @@ const Foods = () => {
           </div>
         ) : (
           <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
-            {filteredFoods.map((food, index) => (
-              <div key={index} className="col">
+            {filteredFoods.map((food) => (
+              <div key={food.id ?? food.name} className="col">
                 <div className="card food-card h-100">
-                  <div className="position-relative">
-                    <img 
-                      src={food.image || 'https://via.placeholder.com/300x150?text=Comida'} 
-                      alt={food.name} 
-                      className="food-card-img-top food-image" 
-                    />
-                    <div className="position-absolute top-0 end-0 m-2">
-                      <span className="price-tag">R$ {food.price}</span>
-                    </div>
-                    {food.category && (
-                      <div className="position-absolute top-0 start-0 m-2">
-                        <span className="category-badge">{food.category}</span>
+                  {/* Parte clicável: imagem + conteúdo */}
+                  <Link
+                    to={`/foods/${food.id}`}
+                    className="text-decoration-none text-reset d-block"
+                  >
+                    <div className="position-relative">
+                      <img
+                        src={food.image || 'https://via.placeholder.com/300x150?text=Comida'}
+                        alt={food.name}
+                        className="food-card-img-top food-image"
+                        loading="lazy"
+                      />
+                      <div className="position-absolute top-0 end-0 m-2">
+                        {typeof food.price !== 'undefined' && (
+                          <span className="price-tag">R$ {Number(food.price).toFixed(2)}</span>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  
-                  <div className="card-body d-flex flex-column">
-                    <h6 className="card-title fw-semibold mb-2">{food.name}</h6>
-                    {food.description && (
-                      <p className="card-text text-muted small mb-2">{food.description}</p>
-                    )}
-                    
-                    <div className="mt-auto d-flex justify-content-between align-items-center">
-                      {food.restaurant && (
-                        <small className="text-muted">{food.restaurant}</small>
+                      {food.category && (
+                        <div className="position-absolute top-0 start-0 m-2">
+                          <span className="category-badge">{food.category}</span>
+                        </div>
                       )}
-                      <button className="btn btn-success btn-sm add-to-cart-btn rounded-pill">
+                    </div>
+
+                    <div className="card-body d-flex flex-column">
+                      <h6 className="card-title fw-semibold mb-2">{food.name}</h6>
+                      {food.description && (
+                        <p className="card-text text-muted small mb-0">{food.description}</p>
+                      )}
+                    </div>
+                  </Link>
+
+                  
+                  <div className="card-footer bg-white border-0 pt-0">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <small className="text-muted">
+                        {food.restaurant || food.restaurantName || ''}
+                      </small>
+                      <button
+                        type="button"
+                        className="btn btn-success btn-sm add-to-cart-btn rounded-pill"
+                        onClick={(e) => handleAdd(e, food)}
+                      >
                         <i className="bi bi-cart-plus me-1"></i>
-                        Add
+                        Adicionar ao Carrinho
                       </button>
                     </div>
                   </div>
@@ -206,8 +238,8 @@ const Foods = () => {
           </div>
         )}
       </div>
-      
-      <Footer /> 
+
+      <Footer />
     </div>
   );
 };

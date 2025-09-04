@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 
 const INLINE_CSS_ID = 'restaurants-inline-styles';
@@ -77,7 +78,7 @@ const Restaurants = () => {
       try {
         const res = await fetch('http://localhost:5000/api/restaurants');
         const data = await res.json();
-        setRestaurants(data || []);
+        setRestaurants(Array.isArray(data) ? data : []);
       } catch (e) {
         console.error('Erro ao buscar restaurantes:', e);
       }
@@ -96,7 +97,8 @@ const Restaurants = () => {
       const qq = q.toLowerCase();
       list = list.filter(r =>
         r.name?.toLowerCase().includes(qq) ||
-        r.cuisine?.toLowerCase().includes(qq)
+        r.cuisine?.toLowerCase().includes(qq) ||
+        r.description?.toLowerCase().includes(qq)
       );
     }
     if (cuisine !== 'Todos') {
@@ -111,7 +113,7 @@ const Restaurants = () => {
   }, [restaurants, q, cuisine, sort]);
 
   const Stars = ({ rating }) => {
-    const r = Number.isFinite(rating) ? rating : 4;
+    const r = Number.isFinite(Number(rating)) ? Number(rating) : 4;
     const filled = Math.round(r);
     return (
       <span className="rating-stars">
@@ -125,9 +127,12 @@ const Restaurants = () => {
     <div className="bg-light min-vh-100">
       <div className="container py-4">
         {/* Header */}
-        <div className="text-center mb-4">
-          <h1 className="h3 fw-bold text-dark mb-2">Restaurantes</h1>
-          <p className="text-muted">Encontre os melhores restaurantes perto de você</p>
+        <div className="d-flex align-items-baseline justify-content-between mb-2">
+          <div>
+            <h1 className="h3 fw-bold text-dark mb-1">Restaurantes</h1>
+            <p className="text-muted mb-0">Encontre os melhores restaurantes perto de você</p>
+          </div>
+          <span className="small text-muted">{items.length} resultado(s)</span>
         </div>
 
         {/* Toolbar */}
@@ -140,7 +145,7 @@ const Restaurants = () => {
                 </span>
                 <input
                   className="form-control border-start-0"
-                  placeholder="Buscar por nome ou cozinha…"
+                  placeholder="Buscar por nome, cozinha ou descrição…"
                   value={q}
                   onChange={e => setQ(e.target.value)}
                 />
@@ -171,7 +176,7 @@ const Restaurants = () => {
           </div>
         </div>
 
-        {/* Grid de cards */}
+        {/* Grid de cards (agora clicável, igual à Home) */}
         <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
           {items.length === 0 && (
             <div className="col-12">
@@ -185,47 +190,62 @@ const Restaurants = () => {
 
           {items.map((r, i) => (
             <div key={`${r.id ?? i}`} className="col">
-              <article className="card rest-card h-100">
-                <div className="rest-thumb position-relative">
-                  <img
-                    src={r.image || 'https://via.placeholder.com/640x360?text=Restaurant'}
-                    alt={r.name}
-                    className="w-100 h-100 object-fit-cover"
-                  />
-                  <span className="badge badge-soft-success position-absolute top-0 start-0 m-2">
-                    {r.cuisine || 'Gastronomia'}
-                  </span>
-                  {r.deliveryTime && (
-                    <span className="badge badge-soft-dark position-absolute bottom-0 end-0 m-2">
-                      {r.deliveryTime} min
+              <Link
+                to={`/restaurants/${r.id}`}
+                className="text-decoration-none text-reset"
+                aria-label={`Ver detalhes do restaurante ${r.name}`}
+              >
+                <article className="card rest-card h-100">
+                  <div className="rest-thumb position-relative">
+                    <img
+                      src={r.image || 'https://via.placeholder.com/640x360?text=Restaurant'}
+                      alt={r.name}
+                      className="w-100 h-100 object-fit-cover"
+                      loading="lazy"
+                    />
+                    <span className="badge badge-soft-success position-absolute top-0 start-0 m-2">
+                      {r.cuisine || 'Gastronomia'}
                     </span>
-                  )}
-                </div>
-
-                <div className="card-body d-flex flex-column p-3">
-                  <div className="d-flex justify-content-between align-items-start mb-2">
-                    <h5 className="card-title mb-0 fw-bold">{r.name}</h5>
-                    <Stars rating={r.rating} />
-                  </div>
-                  
-                  <div className="d-flex align-items-center small text-secondary mb-2">
-                    <span>{r.cuisine || '—'}</span>
-                    <span className="vr"></span>
-                    <span>{r.distance || '1km'}</span>
+                    {r.deliveryTime && (
+                      <span className="badge badge-soft-dark position-absolute bottom-0 end-0 m-2">
+                        {r.deliveryTime} min
+                      </span>
+                    )}
                   </div>
 
-                  <div className="mt-auto pt-2">
-                    <div className="d-flex gap-2 mb-3">
-                      <span className="chip chip-success">Entrega</span>
-                      <span className="chip chip-outline-success">Aberto</span>
+                  <div className="card-body d-flex flex-column p-3">
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <h5 className="card-title mb-0 fw-semibold">{r.name}</h5>
+                      <Stars rating={r.rating} />
                     </div>
                     
-                    <button className="btn btn-outline-success w-100 btn-sm">
-                      Ver cardápio
-                    </button>
+                    {/* Linha de metadados, parecida com a Home */}
+                    <div className="d-flex align-items-center small text-secondary mb-2">
+                      <span>{r.cuisine || '—'}</span>
+                      <span className="vr"></span>
+                      <span>{r.distance || '1km'}</span>
+                    </div>
+
+                    {/* Descrição curta, igual ao padrão da Home */}
+                    {r.description && (
+                      <p className="text-muted small mb-2">{r.description}</p>
+                    )}
+
+                    <div className="mt-auto pt-2">
+                      <div className="d-flex gap-2 mb-3">
+                        <span className="chip chip-success">Entrega</span>
+                        <span className="chip chip-outline-success">Aberto</span>
+                      </div>
+                      
+                      <div className="d-grid">
+                        <span className="btn btn-outline-success w-100 btn-sm">
+                          Ver cardápio
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </article>
+                </article>
+              </Link>
             </div>
           ))}
         </div>

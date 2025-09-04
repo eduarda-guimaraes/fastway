@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 
 const Header = () => {
   return (
-    <header className="bg-success py-3"> {/* fundo verde Bootstrap */}
+    <header className="bg-success py-3">
       <div className="container d-flex justify-content-between align-items-center">
         {/* Logo à esquerda */}
         <div className="d-flex align-items-center">
@@ -18,7 +18,7 @@ const Header = () => {
             <NavLink
               to="/"
               className={({ isActive }) =>
-                `fs-5 text-decoration-none ${isActive ? 'text-warning fw-bold' : 'text-white'}`
+                `fs-5 fw-normal text-decoration-none ${isActive ? 'text-warning' : 'text-white'}`
               }
             >
               Home
@@ -28,7 +28,7 @@ const Header = () => {
             <NavLink
               to="/restaurants"
               className={({ isActive }) =>
-                `fs-5 text-decoration-none ${isActive ? 'text-warning fw-bold' : 'text-white'}`
+                `fs-5 fw-normal text-decoration-none ${isActive ? 'text-warning' : 'text-white'}`
               }
             >
               Restaurantes
@@ -38,7 +38,7 @@ const Header = () => {
             <NavLink
               to="/foods"
               className={({ isActive }) =>
-                `fs-5 text-decoration-none ${isActive ? 'text-warning fw-bold' : 'text-white'}`
+                `fs-5 fw-normal text-decoration-none ${isActive ? 'text-warning' : 'text-white'}`
               }
             >
               Comidas
@@ -48,7 +48,7 @@ const Header = () => {
             <NavLink
               to="/users"
               className={({ isActive }) =>
-                `fs-5 text-decoration-none ${isActive ? 'text-warning fw-bold' : 'text-white'}`
+                `fs-5 fw-normal text-decoration-none ${isActive ? 'text-warning' : 'text-white'}`
               }
             >
               Perfil

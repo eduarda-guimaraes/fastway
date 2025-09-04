@@ -92,7 +92,7 @@ export default function Home() {
           <h2 className="display-5 fw-bold mb-3">Promoção Especial</h2>
           <h4 className="fw-semibold">Super Combo Burger + Batata + Refri</h4>
           <p className="fs-3 text-warning fw-bold">R$ 19,90</p>
-          <p className="lead">Aproveite essa oferta incrível em nossos restaurantes!</p>
+          <p className="lead text-white-50">Aproveite essa oferta incrível em nossos restaurantes!</p>
         </div>
 
         {/* Busca */}
@@ -230,7 +230,6 @@ export default function Home() {
 
       <Footer />
 
-      {/* CSS extra */}
       <style>{`
         .promo-section {
           background: url('/promocao.jpg') center/cover no-repeat;
