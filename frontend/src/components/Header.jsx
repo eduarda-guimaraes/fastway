@@ -51,7 +51,7 @@ const Header = () => {
                 `fs-5 fw-normal text-decoration-none ${isActive ? 'text-warning' : 'text-white'}`
               }
             >
-              Perfil
+              Usuários
             </NavLink>
           </li>
         </ul>
