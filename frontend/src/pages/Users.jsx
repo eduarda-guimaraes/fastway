@@ -1,6 +1,6 @@
 // frontend/src/pages/Users.jsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // 👈 importar
+import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 
 const Users = () => {
@@ -23,53 +23,55 @@ const Users = () => {
   }, []);
 
   return (
-    <div className="bg-light min-vh-100">
-      <div className="container py-5">
-        <h1 className="text-center mb-5">Usuários</h1>
+    <div className="min-vh-100 d-flex flex-column bg-light">
+      <main className="flex-grow-1">
+        <div className="container py-5">
+          <h1 className="text-center mb-5">Usuários</h1>
 
-        {loading ? (
-          <div className="text-center py-5">
-            <div className="spinner-border text-success"></div>
-            <p className="mt-3 text-muted">Carregando usuários...</p>
-          </div>
-        ) : (
-          <div className="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-            {users.map((user) => (
-              <div key={user.id} className="col">
-                <div className="card h-100 shadow-sm user-card border-0">
-                  <div className="card-body text-center">
-                    {/* Avatar */}
-                    <div className="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3">
-                      {user.name ? user.name.charAt(0).toUpperCase() : "?"}
-                    </div>
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-success"></div>
+              <p className="mt-3 text-muted">Carregando usuários...</p>
+            </div>
+          ) : (
+            <div className="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
+              {users.map((user) => (
+                <div key={user.id} className="col">
+                  <div className="card h-100 shadow-sm user-card border-0">
+                    <div className="card-body text-center">
+                      {/* Avatar */}
+                      <div className="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3">
+                        {user.name ? user.name.charAt(0).toUpperCase() : "?"}
+                      </div>
 
-                    <h5 className="fw-bold">{user.name}</h5>
-                    <p className="text-muted small">{user.email}</p>
+                      <h5 className="fw-bold">{user.name}</h5>
+                      <p className="text-muted small">{user.email}</p>
 
-                    {user.role && (
-                      <span className="badge bg-secondary">{user.role}</span>
-                    )}
+                      {user.role && (
+                        <span className="badge bg-secondary">{user.role}</span>
+                      )}
 
-                    <div className="mt-3">
-                      <Link
-                        to={`/users/${user.id}`}
-                        className="btn btn-outline-success btn-sm rounded-pill"
-                      >
-                        Ver perfil
-                      </Link>
+                      <div className="mt-3">
+                        <Link
+                          to={`/users/${user.id}`}
+                          className="btn btn-outline-success btn-sm rounded-pill"
+                        >
+                          Ver perfil
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            {users.length === 0 && (
-              <div className="text-center py-5 text-muted">
-                Nenhum usuário encontrado
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+              ))}
+              {users.length === 0 && (
+                <div className="text-center py-5 text-muted">
+                  Nenhum usuário encontrado
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </main>
 
       <Footer />
 

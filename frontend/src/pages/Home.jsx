@@ -1,14 +1,14 @@
-// frontend/src/pages/Home.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
+import { useOrder } from '../context/OrderContext';
 
 export default function Home() {
   const [restaurants, setRestaurants] = useState([]);
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { addItem } = useOrder();
 
-  // estado da busca (sincroniza com ?q= na URL)
   const [q, setQ] = useState(() => {
     const usp = new URLSearchParams(window.location.search);
     return usp.get('q') ?? '';
@@ -36,7 +36,6 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // atualiza ?q= na URL
   useEffect(() => {
     const usp = new URLSearchParams(window.location.search);
     if (q) usp.set('q', q);
@@ -44,7 +43,6 @@ export default function Home() {
     window.history.replaceState(null, '', `/?${usp.toString()}`);
   }, [q]);
 
-  // sincroniza estado quando navegar pelo histórico
   useEffect(() => {
     const onPop = () => {
       const usp = new URLSearchParams(window.location.search);
@@ -54,7 +52,6 @@ export default function Home() {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
-  // normalizador + filtro
   const norm = (s) => (s || '').toString().toLowerCase();
   const matchesQuery = (item) => {
     if (!q) return true;
@@ -76,13 +73,24 @@ export default function Home() {
     () => restaurants.filter(matchesQuery),
     [restaurants, q]
   );
-
   const filteredFoods = useMemo(
     () => foods.filter(matchesQuery),
     [foods, q]
   );
 
   const isEmptySearch = !loading && !filteredRestaurants.length && !filteredFoods.length;
+
+  const handleAdd = (e, food) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({
+      id: food.id,
+      name: food.name,
+      price: Number(food.price) || 0,
+      image: food.image,
+      restaurantName: food.restaurantName || food.restaurant,
+    }, 1);
+  };
 
   return (
     <div className="bg-white min-vh-100">
@@ -137,11 +145,11 @@ export default function Home() {
             <div className="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
               {filteredRestaurants.map((restaurant) => (
                 <div key={restaurant.id} className="col">
-                  <Link
-                    to={`/restaurants/${restaurant.id}`}
-                    className="text-decoration-none text-reset"
-                  >
-                    <div className="card h-100 shadow-sm border-0 restaurant-card">
+                  <div className="card h-100 shadow-sm border-0 restaurant-card d-flex flex-column">
+                    <Link
+                      to={`/restaurants/${restaurant.id}`}
+                      className="text-decoration-none text-reset"
+                    >
                       <img
                         src={restaurant.image || 'https://via.placeholder.com/600x400?text=Restaurante'}
                         alt={restaurant.name}
@@ -162,8 +170,18 @@ export default function Home() {
                           </span>
                         </div>
                       </div>
+                    </Link>
+
+                    <div className="card-footer bg-white border-0 pt-3 mt-auto border-top">
+                      <Link
+                        to={`/restaurants/${restaurant.id}`}
+                        className="btn btn-outline-success btn-sm w-100"
+                        aria-label={`Ver cardápio de ${restaurant.name}`}
+                      >
+                        Ver cardápio
+                      </Link>
                     </div>
-                  </Link>
+                  </div>
                 </div>
               ))}
             </div>
@@ -181,44 +199,58 @@ export default function Home() {
             )}
           </div>
 
-          {loading ? (
-            <div className="text-center py-5">
-              <div className="spinner-border text-success" />
-              <p className="mt-3 text-muted">Carregando alimentos...</p>
-            </div>
-          ) : filteredFoods.length ? (
-            <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-              {filteredFoods.map((food) => (
-                <div key={food.id} className="col">
-                  <Link to={`/foods/${food.id}`} className="text-decoration-none text-reset">
-                    <div className="card h-100 shadow-sm border-0 food-card">
-                      <div className="position-relative">
-                        <img
-                          src={food.image || 'https://via.placeholder.com/600x400?text=Comida'}
-                          alt={food.name}
-                          className="card-img-top food-img"
-                          loading="lazy"
-                        />
-                        {typeof food.price !== 'undefined' && (
-                          <span className="badge bg-success position-absolute top-0 end-0 m-2 px-2 py-1">
-                            R$ {Number(food.price).toFixed(2)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="card-body text-center">
-                        <h6 className="fw-semibold mb-1">{food.name}</h6>
-                        {food.description && (
-                          <p className="text-muted small mb-0">{food.description}</p>
-                        )}
-                      </div>
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-success" />
+            <p className="mt-3 text-muted">Carregando alimentos...</p>
+          </div>
+        ) : filteredFoods.length ? (
+          <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            {filteredFoods.map((food) => (
+              <div key={food.id} className="col">
+                <div className="card h-100 shadow-sm border-0 food-card d-flex flex-column">
+                  <Link to={`/foods/${food.id}`} className="text-decoration-none text-reset d-block">
+                    <div className="position-relative">
+                      <img
+                        src={food.image || 'https://via.placeholder.com/600x400?text=Comida'}
+                        alt={food.name}
+                        className="card-img-top food-img"
+                        loading="lazy"
+                      />
+                      {typeof food.price !== 'undefined' && (
+                        <span className="badge bg-success position-absolute top-0 end-0 m-2 px-2 py-1">
+                          R$ {Number(food.price).toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="card-body text-center">
+                      <h6 className="fw-semibold mb-2">{food.name}</h6>
+                      {food.description && (
+                        <p className="text-muted small mb-0">{food.description}</p>
+                      )}
                     </div>
                   </Link>
+
+                  <div className="card-footer bg-white pt-3 mt-auto border-0 border-top">
+                    <div className="d-grid">
+                      <button
+                        type="button"
+                        className="btn btn-success btn-sm rounded-pill"
+                        onClick={(e) => handleAdd(e, food)}
+                        aria-label={`Adicionar ${food.name} ao pedido`}
+                      >
+                        <i className="bi bi-cart-plus me-1"></i>
+                        Adicionar ao pedido
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center text-muted">Nenhum alimento encontrado.</div>
-          )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-muted">Nenhum alimento encontrado.</div>
+        )}
         </div>
 
         {isEmptySearch && (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // 👈 importa o Link
+import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
+import { useOrder } from '../context/OrderContext';
 
 const INLINE_CSS_ID = 'foods-inline-styles';
 const CSS_TEXT = `
@@ -10,6 +11,8 @@ const CSS_TEXT = `
     transition: all 0.3s ease;
     border: 1px solid rgba(0,0,0,0.08);
     background: #fff;
+    display: flex;
+    flex-direction: column;
   }
   .food-card:hover {
     transform: translateY(-4px);
@@ -49,6 +52,13 @@ const CSS_TEXT = `
     background: #0f6848;
   }
 
+  .card-footer {
+    margin-top: auto;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+
   .search-container { position: relative; }
   .search-icon {
     position: absolute;
@@ -66,6 +76,7 @@ const Foods = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [categories, setCategories] = useState(['Todos']);
+  const { addItem } = useOrder();
 
   useEffect(() => {
     if (!document.getElementById(INLINE_CSS_ID)) {
@@ -76,22 +87,22 @@ const Foods = () => {
     }
   }, []);
 
-  // Buscar dados da API
   const fetchFoods = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/foods');
       const data = await response.json();
-      setFoods(Array.isArray(data) ? data : []);
-      setFilteredFoods(Array.isArray(data) ? data : []);
-      const uniqueCategories = ['Todos', ...new Set((Array.isArray(data) ? data : [])
-        .map(food => food.category).filter(Boolean))];
+      const list = Array.isArray(data) ? data : [];
+      setFoods(list);
+      setFilteredFoods(list);
+      const uniqueCategories = ['Todos', ...new Set(list.map(f => f.category).filter(Boolean))];
       setCategories(uniqueCategories);
     } catch (error) {
       console.error("Erro ao buscar alimentos:", error);
     }
   };
 
-  // Filtro
+  useEffect(() => { fetchFoods(); }, []);
+
   useEffect(() => {
     let result = foods;
 
@@ -102,38 +113,33 @@ const Foods = () => {
         food.description?.toLowerCase().includes(needle)
       );
     }
-
     if (selectedCategory !== 'Todos') {
       result = result.filter(food => food.category === selectedCategory);
     }
-
     setFilteredFoods(result);
   }, [searchTerm, selectedCategory, foods]);
 
-  useEffect(() => {
-    fetchFoods();
-  }, []);
-
-  // Evita que o botão "Add" dentro do card clique o Link
   const handleAdd = (e, food) => {
     e.stopPropagation();
     e.preventDefault();
-    // aqui você pode disparar seu fluxo de carrinho
-    console.log('Adicionar ao carrinho:', food);
+    addItem({
+      id: food.id,
+      name: food.name,
+      price: Number(food.price) || 0,
+      image: food.image,
+      restaurantName: food.restaurantName || food.restaurant,
+    }, 1);
   };
 
   return (
     <div className="bg-light min-vh-100">
       <style id={INLINE_CSS_ID}>{CSS_TEXT}</style>
-
       <div className="container py-4">
-        {/* Header */}
         <div className="text-center mb-4">
           <h1 className="h4 fw-bold text-dark mb-1">Cardápio</h1>
           <p className="text-muted small">Escolha suas comidas favoritas</p>
         </div>
 
-        {/* Filtros e Busca */}
         <div className="row mb-4 g-2">
           <div className="col-md-8">
             <div className="search-container">
@@ -162,7 +168,6 @@ const Foods = () => {
           </div>
         </div>
 
-        {/* Cards */}
         {filteredFoods.length === 0 ? (
           <div className="text-center py-5">
             <i className="bi bi-egg-fried display-6 text-muted d-block mb-2"></i>
@@ -174,11 +179,7 @@ const Foods = () => {
             {filteredFoods.map((food) => (
               <div key={food.id ?? food.name} className="col">
                 <div className="card food-card h-100">
-                  {/* Parte clicável: imagem + conteúdo */}
-                  <Link
-                    to={`/foods/${food.id}`}
-                    className="text-decoration-none text-reset d-block"
-                  >
+                  <Link to={`/foods/${food.id}`} className="text-decoration-none text-reset d-block">
                     <div className="position-relative">
                       <img
                         src={food.image || 'https://via.placeholder.com/300x150?text=Comida'}
@@ -206,8 +207,7 @@ const Foods = () => {
                     </div>
                   </Link>
 
-                  
-                  <div className="card-footer bg-white border-0 pt-0">
+                  <div className="card-footer bg-white">
                     <div className="d-flex justify-content-between align-items-center">
                       <small className="text-muted">
                         {food.restaurant || food.restaurantName || ''}
@@ -218,7 +218,7 @@ const Foods = () => {
                         onClick={(e) => handleAdd(e, food)}
                       >
                         <i className="bi bi-cart-plus me-1"></i>
-                        Adicionar ao Carrinho
+                        Adicionar ao Pedido
                       </button>
                     </div>
                   </div>
@@ -228,7 +228,6 @@ const Foods = () => {
           </div>
         )}
 
-        {/* Loading */}
         {foods.length === 0 && filteredFoods.length === 0 && (
           <div className="text-center py-5">
             <div className="spinner-border text-success" role="status">
@@ -238,7 +237,6 @@ const Foods = () => {
           </div>
         )}
       </div>
-
       <Footer />
     </div>
   );

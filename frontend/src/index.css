@@ -94,3 +94,19 @@ header ul li a:hover {
   background-color: #88C59E;
 }
 
+.food-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.food-card .card-footer {
+  margin-top: auto;           
+  padding-top: 12px;          
+  padding-bottom: 12px;
+  border-top: 1px solid rgba(0,0,0,0.06); 
+}
