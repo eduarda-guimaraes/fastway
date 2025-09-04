@@ -1,6 +1,6 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client'; // Para versões mais recentes do React
-import App from './App.jsx'; // Importando o App.jsx
+import ReactDOM from 'react-dom/client'; 
+import App from './App.jsx'; 
 import './index.css'; 
 import './index.css'; 
 

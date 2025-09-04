@@ -176,7 +176,7 @@ const Restaurants = () => {
           </div>
         </div>
 
-        {/* Grid de cards (agora clicável, igual à Home) */}
+        {/* Grid de cards*/}
         <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
           {items.length === 0 && (
             <div className="col-12">
@@ -218,15 +218,11 @@ const Restaurants = () => {
                       <h5 className="card-title mb-0 fw-semibold">{r.name}</h5>
                       <Stars rating={r.rating} />
                     </div>
-                    
-                    {/* Linha de metadados, parecida com a Home */}
                     <div className="d-flex align-items-center small text-secondary mb-2">
                       <span>{r.cuisine || '—'}</span>
                       <span className="vr"></span>
                       <span>{r.distance || '1km'}</span>
                     </div>
-
-                    {/* Descrição curta, igual ao padrão da Home */}
                     {r.description && (
                       <p className="text-muted small mb-2">{r.description}</p>
                     )}

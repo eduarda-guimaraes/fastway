@@ -1,61 +1,88 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-const OrderCtx = createContext();
+const OrderContext = createContext(null);
 
-const STORAGE_KEY = 'fastway:order';
+function readLS(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+function writeLS(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+}
 
 export function OrderProvider({ children }) {
-  const [items, setItems] = useState(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [items, setItems] = useState(() => readLS("order.items", []));
+  const [meta, setMeta] = useState(() =>
+    readLS("order.meta", {
+      deliveryMethod: "delivery",  
+      address: "",
+      payment: "pix",               
+      note: "",                    
+      coupon: "",
+    })
+  );
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }, [items]);
+  useEffect(() => writeLS("order.items", items), [items]);
+  useEffect(() => writeLS("order.meta", meta), [meta]);
 
-  const addItem = (item, qty = 1) => {
-    setItems((prev) => {
-      const idx = prev.findIndex((i) => String(i.id) === String(item.id));
+  function addItem(item, qty = 1) {
+    setItems(prev => {
+      const id = String(item.id);
+      const idx = prev.findIndex(p => String(p.id) === id);
       if (idx >= 0) {
         const copy = [...prev];
         copy[idx] = { ...copy[idx], qty: copy[idx].qty + qty };
+        if (copy[idx].qty <= 0) copy.splice(idx, 1);
         return copy;
       }
-      return [...prev, { ...item, qty }];
+      return [...prev, { ...item, qty: Math.max(1, qty) }];
     });
-  };
+  }
 
-  const decrementItem = (id, qty = 1) => {
-    setItems((prev) => {
-      const idx = prev.findIndex((i) => String(i.id) === String(id));
+  function decrementItem(id) {
+    setItems(prev => {
+      const idx = prev.findIndex(p => String(p.id) === String(id));
       if (idx < 0) return prev;
-      const cur = prev[idx];
-      const newQty = cur.qty - qty;
-      if (newQty <= 0) return prev.filter((i) => String(i.id) !== String(id));
       const copy = [...prev];
-      copy[idx] = { ...cur, qty: newQty };
+      const newQty = copy[idx].qty - 1;
+      if (newQty <= 0) copy.splice(idx, 1);
+      else copy[idx] = { ...copy[idx], qty: newQty };
       return copy;
     });
-  };
+  }
 
-  const removeItem = (id) => setItems((prev) => prev.filter((i) => String(i.id) !== String(id)));
-  const clearOrder = () => setItems([]);
+  function removeItem(id) { setItems(prev => prev.filter(p => String(p.id) !== String(id))); }
+  function clearOrder() { setItems([]); }
 
-  const { count, total } = useMemo(() => {
-    const count = items.reduce((acc, i) => acc + i.qty, 0);
-    const total = items.reduce((acc, i) => acc + (Number(i.price) || 0) * i.qty, 0);
-    return { count, total };
-  }, [items]);
+  const count = useMemo(() => items.reduce((acc, it) => acc + it.qty, 0), [items]);
+  const subtotal = useMemo(() => items.reduce((acc, it) => acc + (Number(it.price) || 0) * it.qty, 0), [items]);
+  const deliveryFee = useMemo(() => (meta.deliveryMethod === "delivery" ? 6.9 : 0), [meta.deliveryMethod]);
+  const discount = useMemo(() => {
+    if (!meta.coupon) return 0;
+    if (meta.coupon.trim().toUpperCase() === "DESCONTO10") return subtotal * 0.1;
+    return 0;
+  }, [meta.coupon, subtotal]);
+  const total = useMemo(() => Math.max(0, subtotal + deliveryFee - discount), [subtotal, deliveryFee, discount]);
 
-  const value = { items, addItem, decrementItem, removeItem, clearOrder, count, total };
-  return <OrderCtx.Provider value={value}>{children}</OrderCtx.Provider>;
+  return (
+    <OrderContext.Provider
+      value={{
+        items, addItem, decrementItem, removeItem, clearOrder,
+        count, subtotal, deliveryFee, discount, total,
+        meta, setMeta,
+      }}
+    >
+      {children}
+    </OrderContext.Provider>
+  );
 }
 
 export function useOrder() {
-  return useContext(OrderCtx);
+  const ctx = useContext(OrderContext);
+  if (!ctx) throw new Error("useOrder deve ser usado dentro de <OrderProvider>");
+  return ctx;
 }

@@ -1,13 +1,12 @@
-# backend/server.py
 from flask import Flask, jsonify
 from flask_cors import CORS
 import requests
 
 app = Flask(__name__)
-CORS(app)  # Libera CORS para o frontend
+CORS(app)  
 
 API_BASE = "https://apifakedelivery.vercel.app"
-TIMEOUT = 10  # segundos
+TIMEOUT = 10  
 
 
 # -------- Helpers de consumo --------
@@ -67,7 +66,6 @@ def foods():
 # -------- Rotas de detalhe --------
 @app.route('/api/foods/<int:item_id>')
 def food_detail(item_id):
-    """Detalhe de um produto de comida por ID."""
     all_foods = get_foods()
     item = find_by_id(all_foods, item_id)
     if not item:
@@ -77,7 +75,6 @@ def food_detail(item_id):
 
 @app.route('/api/restaurants/<int:item_id>')
 def restaurant_detail(item_id):
-    """Detalhe de um restaurante por ID."""
     all_restaurants = get_restaurants()
     item = find_by_id(all_restaurants, item_id)
     if not item:

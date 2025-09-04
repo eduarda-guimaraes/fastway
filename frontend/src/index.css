@@ -1,15 +1,11 @@
-/* src/index.css */
-
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
-/* Estilos personalizados (se necessário) */
 body {
   font-family: Arial, sans-serif;
 }
 
-/* index.css */
 header {
-  background-color: #A9D5A5; /* Cor de fundo verde */
+  background-color: #A9D5A5;
   padding: 20px 0;
 }
 
@@ -37,14 +33,8 @@ header ul li a:hover {
   color: #F3F9F1;
 }
 
-/* index.css */
-.bg-white {
-  background-color: #FFFFFF;
-}
-
-.text-center {
-  text-align: center;
-}
+.bg-white { background-color: #FFFFFF; }
+.text-center { text-align: center; }
 
 .display-4 {
   font-size: 3rem;
@@ -59,9 +49,7 @@ header ul li a:hover {
 
 .row-cols-1,
 .row-cols-sm-2,
-.row-cols-md-3 {
-  margin-top: 30px;
-}
+.row-cols-md-3 { margin-top: 30px; }
 
 .card {
   border-radius: 15px;
@@ -78,20 +66,25 @@ header ul li a:hover {
   font-weight: bold;
 }
 
-.card p {
-  color: #6C757D;
+.card p { color: #6C757D; }
+
+.btn-pill { border-radius: 9999px; padding: 10px 20px; }
+
+.btn-outline-green {
+  background-color: transparent !important;
+  color: #198754 !important;
+  border: 2px solid #198754 !important;
+  border-radius: 9999px;
+}
+.btn-outline-green:hover,
+.btn-outline-green:focus {
+  background-color: #198754 !important;
+  color: #fff !important;
 }
 
-.card .btn {
-  background-color: #A9D5A5;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 20px;
-  text-decoration: none;
-}
-
-.card .btn:hover {
-  background-color: #88C59E;
+.btn-outline-success,
+.btn-outline-success:hover {
+  box-shadow: none !important;
 }
 
 .food-card {
@@ -105,8 +98,21 @@ header ul li a:hover {
 }
 
 .food-card .card-footer {
-  margin-top: auto;           
-  padding-top: 12px;          
+  margin-top: auto;
+  padding-top: 12px;
   padding-bottom: 12px;
-  border-top: 1px solid rgba(0,0,0,0.06); 
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.cart-fab { font-size: 0.95rem; }
+
+@media (max-width: 576px) {
+  .cart-fab {
+    left: 8px;
+    right: 8px;
+    justify-content: space-between;
+    border-radius: 12px;
+    font-size: 1rem;
+    padding: 12px 16px;
+  }
 }

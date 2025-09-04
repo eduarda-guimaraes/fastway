@@ -1,4 +1,3 @@
-// frontend/src/pages/Users.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
@@ -7,8 +6,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // UI state
   const [q, setQ] = useState('');
   const [role, setRole] = useState('');
   const [sort, setSort] = useState('name-asc');
@@ -64,7 +61,6 @@ export default function Users() {
   return (
     <div className="min-vh-100 d-flex flex-column bg-light">
       <main className="flex-grow-1">
-        {/* HERO / BANNER */}
         <div className="users-hero">
           <div className="container py-5">
             <div className="text-center text-dark">
@@ -74,7 +70,6 @@ export default function Users() {
               </p>
             </div>
 
-            {/* CONTROLES */}
             <div className="row g-3 mt-4 justify-content-center">
               <div className="col-12 col-md-6">
                 <div className="position-relative">
@@ -133,8 +128,6 @@ export default function Users() {
             </div>
           </div>
         </div>
-
-        {/* LISTAGEM */}
         <div className="container py-5">
           {!loading && visible.length > 0 && (
             <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
@@ -147,7 +140,6 @@ export default function Users() {
                   <div key={user.id} className="col">
                     <div className="card h-100 shadow-sm border-0 users-card">
                       <div className="card-body p-4 d-flex flex-column text-center">
-                        {/* Avatar verde */}
                         <div
                           className="avatar rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 text-white"
                           style={{ background: '#198754' }}
@@ -230,12 +222,12 @@ export default function Users() {
 
         .btn-amarillo {
           background-color: #FFD54F;
-          color: #212529;
+          color: #fff; 
           border: 1px solid #f0c13b;
         }
         .btn-amarillo:hover {
           background-color: #FBC02D;
-          color: #212529;
+          color: #fff; 
         }
       `}</style>
     </div>

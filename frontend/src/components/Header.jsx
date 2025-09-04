@@ -1,4 +1,3 @@
-// frontend/src/components/Header.jsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 
@@ -6,13 +5,11 @@ const Header = () => {
   return (
     <header className="bg-success py-3">
       <div className="container d-flex justify-content-between align-items-center">
-        {/* Logo à esquerda */}
         <div className="d-flex align-items-center">
           <img src="./logo1.png" alt="FastWay Logo" width="70" height="70" className="me-2" />
           <div className="text-white fs-4 fw-bold">FastWay</div>
         </div>
         
-        {/* Menu de navegação à direita */}
         <ul className="d-flex gap-4 m-0 list-unstyled">
           <li>
             <NavLink

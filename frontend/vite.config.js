@@ -6,10 +6,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': '/src', // Caso você use o alias '@' para importar arquivos de dentro da pasta src
+      '@': '/src', 
     },
   },
   server: {
-    port: 5173, // O Vite vai rodar no porta 5173
+    port: 5173, 
   },
 });
